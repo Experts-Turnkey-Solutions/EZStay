@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EZStay.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250511140801_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250512132923_UpdatedSeedData")]
+    partial class UpdatedSeedData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,16 +53,11 @@ namespace EZStay.Api.Migrations
 
             modelBuilder.Entity("EZStay.Api.Models.Domain.Image", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("PropertyId1")
+                    b.Property<Guid>("PropertyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Url")
@@ -71,7 +66,7 @@ namespace EZStay.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PropertyId1");
+                    b.HasIndex("PropertyId");
 
                     b.ToTable("Images");
                 });
@@ -87,6 +82,7 @@ namespace EZStay.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("PricePerNight")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Title")
@@ -121,23 +117,6 @@ namespace EZStay.Api.Migrations
                     b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("EZStay.Api.Models.Domain.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-                });
-
             modelBuilder.Entity("EZStay.Api.Models.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -146,7 +125,7 @@ namespace EZStay.Api.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -156,32 +135,72 @@ namespace EZStay.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
+                    b.Property<string>("Roles")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId");
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b0a1e2f3-4d56-7890-1234-56789abcdef0"),
+                            Email = "admin@gmail.com",
+                            FullName = "Administrator",
+                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
+                            Roles = "Admin,Manager,AccountManager,ContentManager,Owner,User",
+                            Username = "admin"
+                        },
+                        new
+                        {
+                            Id = new Guid("d0a2e3f4-5d67-8901-2345-67890abcde01"),
+                            Email = "manager@gmail.com",
+                            FullName = "Manager User",
+                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
+                            Roles = "Manager,User",
+                            Username = "manager"
+                        },
+                        new
+                        {
+                            Id = new Guid("e1a3e4f5-6d78-9012-3456-78901bcdef23"),
+                            Email = "contentmanager@gmail.com",
+                            FullName = "Content Manager User",
+                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
+                            Roles = "ContentManager,User",
+                            Username = "contentmanager"
+                        },
+                        new
+                        {
+                            Id = new Guid("f2a4e5f6-7d89-0123-4567-89012cde2345"),
+                            Email = "accountmanager@gmail.com",
+                            FullName = "Account Manager User",
+                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
+                            Roles = "AccountManager,User",
+                            Username = "accountmanager"
+                        });
                 });
 
             modelBuilder.Entity("EZStay.Api.Models.Domain.Image", b =>
                 {
-                    b.HasOne("EZStay.Api.Models.Domain.Property", null)
+                    b.HasOne("EZStay.Api.Models.Domain.Property", "Property")
                         .WithMany("Images")
-                        .HasForeignKey("PropertyId1");
-                });
-
-            modelBuilder.Entity("EZStay.Api.Models.Domain.User", b =>
-                {
-                    b.HasOne("EZStay.Api.Models.Domain.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
+                        .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.Navigation("Property");
                 });
 
             modelBuilder.Entity("EZStay.Api.Models.Domain.Property", b =>

@@ -1,4 +1,4 @@
-﻿namespace EZStay.Api.Utils
+﻿namespace EZStay.Api.Utils.Core
 {
     public class JwtUtils
     {

@@ -2,8 +2,10 @@
 {
     public class Image
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Url { get; set; }
-        public int PropertyId { get; set; }
+
+        public Guid PropertyId { get; set; }              // Foreign Key
+        public Property Property { get; set; }            // Navigation Property
     }
 }

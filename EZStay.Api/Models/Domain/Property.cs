@@ -6,6 +6,7 @@
         public string Title { get; set; }
         public string Description { get; set; }
         public decimal PricePerNight { get; set; }
-        public List<Image> Images { get; set; }
+
+        public List<Image> Images { get; set; } = new();  // Navigation Property
     }
 }

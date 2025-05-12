@@ -8,16 +8,20 @@ namespace EZStay.Api.Mappings
     {
         public AMProfiles()
         {
-            // Mapping between User and RegisterDto
-            CreateMap<User, RegisterDto>().ReverseMap(); 
+            // RegisterDto -> User
+            CreateMap<RegisterDto, User>()
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
-            // Mapping between Property and PropertyDto
-            CreateMap<Property, PropertyDto>().ReverseMap(); 
+            // User -> UserDto
+            CreateMap<User, UserDto>();
 
-            // Mapping between Booking and BookingDto
-            CreateMap<Booking, BookingDto>().ReverseMap(); 
+            // Property <-> PropertyDto
+            CreateMap<Property, PropertyDto>().ReverseMap();
 
-            // Mapping between Review and ReviewDto
+            // Booking <-> BookingDto
+            CreateMap<Booking, BookingDto>().ReverseMap();
+
+            // Review <-> ReviewDto
             CreateMap<Review, ReviewDto>().ReverseMap();
         }
     }

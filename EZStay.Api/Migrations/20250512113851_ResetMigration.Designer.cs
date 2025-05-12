@@ -4,6 +4,7 @@ using EZStay.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EZStay.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250512113851_ResetMigration")]
+    partial class ResetMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,6 +117,35 @@ namespace EZStay.Api.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("EZStay.Api.Models.Domain.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Administrator"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Guest"
+                        });
+                });
+
             modelBuilder.Entity("EZStay.Api.Models.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -132,9 +164,8 @@ namespace EZStay.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Roles")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -144,6 +175,8 @@ namespace EZStay.Api.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("RoleId");
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -157,35 +190,8 @@ namespace EZStay.Api.Migrations
                             Email = "admin@gmail.com",
                             FullName = "Administrator",
                             PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
-                            Roles = "Admin,Manager,AccountManager,ContentManager,Owner,User",
+                            RoleId = 1,
                             Username = "admin"
-                        },
-                        new
-                        {
-                            Id = new Guid("d0a2e3f4-5d67-8901-2345-67890abcde01"),
-                            Email = "manager@gmail.com",
-                            FullName = "Manager User",
-                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
-                            Roles = "Manager,User",
-                            Username = "manager"
-                        },
-                        new
-                        {
-                            Id = new Guid("e1a3e4f5-6d78-9012-3456-78901bcdef23"),
-                            Email = "contentmanager@gmail.com",
-                            FullName = "Content Manager User",
-                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
-                            Roles = "ContentManager,User",
-                            Username = "contentmanager"
-                        },
-                        new
-                        {
-                            Id = new Guid("f2a4e5f6-7d89-0123-4567-89012cde2345"),
-                            Email = "accountmanager@gmail.com",
-                            FullName = "Account Manager User",
-                            PasswordHash = "$2a$12$FB8ZwL2s9RcwDAwpthyWve/.4Q.Dc88SwsbbCQ9doaQjI4xpWk0YG",
-                            Roles = "AccountManager,User",
-                            Username = "accountmanager"
                         });
                 });
 
@@ -198,6 +204,17 @@ namespace EZStay.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Property");
+                });
+
+            modelBuilder.Entity("EZStay.Api.Models.Domain.User", b =>
+                {
+                    b.HasOne("EZStay.Api.Models.Domain.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("EZStay.Api.Models.Domain.Property", b =>

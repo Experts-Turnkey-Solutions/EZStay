@@ -17,6 +17,9 @@ namespace EZStay.Api.Repositories
         public async Task<IEnumerable<T>> GetAllAsync()
             => await _dbSet.AsNoTracking().ToListAsync();
 
+        public async Task<IEnumerable<T>> GetAllWithIncludeAsync(Func<IQueryable<T>, IQueryable<T>> include)
+            => await include(_dbSet).AsNoTracking().ToListAsync();
+
         public async Task<T?> GetByIdAsync(Guid id)
             => await _dbSet.FindAsync(id);
 
@@ -45,6 +48,11 @@ namespace EZStay.Api.Repositories
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public IQueryable<T> Query()
+        {
+            return _dbSet.AsNoTracking();
         }
     }
 }

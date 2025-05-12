@@ -2,7 +2,10 @@ using EZStay.Api.Services;
 using EZStay.Api.Data;
 using EZStay.Api.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using AutoMapper;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +32,26 @@ builder.Services.AddHttpClient();
 // Add Controllers
 builder.Services.AddControllers();
 
+// Add JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false; // Set to true if you want to enforce HTTPS
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+// Add Authorization services
+builder.Services.AddAuthorization();
+
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -45,16 +68,14 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "EZStay API V1");
         options.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
-    }
-    
-    );
+    });
 }
 
-// Use HTTPS redirection and authorization
+// Use HTTPS redirection
 app.UseHttpsRedirection();
 
-// Enable authentication and authorization (if used later)
-app.UseAuthentication();  // Uncomment if authentication is enabled
+// Enable authentication and authorization middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map controllers
