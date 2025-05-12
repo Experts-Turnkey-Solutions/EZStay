@@ -13,7 +13,14 @@ namespace EZStay.Api.Mappings
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
             // User -> UserDto
-            CreateMap<User, UserDto>();
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.Roles,
+                    opt => opt.MapFrom(src => src.Roles.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()));
+
+            // UserDto -> User
+            CreateMap<UserDto, User>()
+                .ForMember(dest => dest.Roles,
+                    opt => opt.MapFrom(src => string.Join(",", src.Roles)));
 
             // Property <-> PropertyDto
             CreateMap<Property, PropertyDto>().ReverseMap();

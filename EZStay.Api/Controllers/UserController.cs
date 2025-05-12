@@ -24,6 +24,8 @@ namespace EZStay.Api.Controllers
         {
             var users = await _userService.GetAllUsersAsync();
             var userDtos = _mapper.Map<List<UserDto>>(users); // Map users to UserDto
+
+            if (userDtos == null || !userDtos.Any()) return NotFound("No users found.");
             return Ok(userDtos);
         }
 
