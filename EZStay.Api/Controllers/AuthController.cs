@@ -10,10 +10,11 @@ using EZStay.Api.Utils.Core;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 
-namespace EZStay.Api.Controllers
+namespace EZStay.Api.Controllers // namespace EZStay.Api.Controllers.v1 namespace for clarity (optional)
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -30,11 +31,9 @@ namespace EZStay.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
-            // If the role is admin, allow only one admin
             if (dto.Role.ToLower() == "admin")
                 return BadRequest("Invalid type.");
 
-            // Check if user already exists (by email or username)
             var existingUser = await _userService.GetUserByEmailOrUsernameAsync(dto.Email);
 
             if (existingUser != null)
@@ -42,20 +41,14 @@ namespace EZStay.Api.Controllers
                 var rolesList = existingUser.Roles.Split(',').Select(r => r.Trim().ToLower()).ToList();
 
                 if (rolesList.Contains(dto.Role.ToLower()))
-                {
                     return BadRequest("This role has already been assigned to this user.");
-                }
 
-                // Add new role to existing user's roles
                 rolesList.Add(dto.Role);
                 existingUser.Roles = string.Join(",", rolesList);
-
-                // Update user in DB
                 await _userService.UpdateUserAsync(existingUser.Id, existingUser);
-                return Ok(existingUser);  // Optionally return updated user
+                return Ok(existingUser);
             }
 
-            // Else, create a brand new user
             var newUser = _mapper.Map<User>(dto);
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             newUser.Roles = dto.Role;
@@ -70,16 +63,11 @@ namespace EZStay.Api.Controllers
             var user = await _userService.GetUserByEmailOrUsernameAsync(dto.EmailOrUsername);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-            {
                 return Unauthorized("Invalid credentials");
-            }
 
-            // Check if the requested role exists in the user's roles
             var rolesList = user.Roles.Split(',').Select(r => r.Trim().ToLower()).ToList();
             if (!rolesList.Contains(dto.Role.ToLower()))
-            {
                 return Unauthorized("You are not authorized for this role.");
-            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
@@ -89,7 +77,7 @@ namespace EZStay.Api.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, dto.Role) // Only add the requested role to the token
+                new Claim(ClaimTypes.Role, dto.Role)
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

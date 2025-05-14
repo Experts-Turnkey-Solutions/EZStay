@@ -7,7 +7,8 @@ using AutoMapper;
 namespace EZStay.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class PropertyController : ControllerBase
     {
         private readonly IPropertyService _propertyService;
