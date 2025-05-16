@@ -177,6 +177,3 @@ Copy
 2. **Online Markdown Converters:**
    - Paste the content into [Dillinger](https://dillinger.io/) or an online Markdown editor.
    - Export to PDF directly.
-
-Would you like any further assistance with converting or adjustments?
-
