@@ -180,5 +180,3 @@ Copy
 
 Would you like any further assistance with converting or adjustments?
 
-[EZStay.pdf](https://github.com/user-attachments/files/20243445/EZStay.pdf)
-
