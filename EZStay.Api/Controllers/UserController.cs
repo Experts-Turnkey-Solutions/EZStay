@@ -3,9 +3,11 @@ using EZStay.Api.Models.Domain;
 using EZStay.Api.Models.DTOs;
 using EZStay.Api.Services;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EZStay.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]

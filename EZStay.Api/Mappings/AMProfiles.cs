@@ -14,13 +14,15 @@ namespace EZStay.Api.Mappings
 
             // User -> UserDto
             CreateMap<User, UserDto>()
+                // Roles is already List<string>, map directly without Split
                 .ForMember(dest => dest.Roles,
-                    opt => opt.MapFrom(src => src.Roles.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()));
+                    opt => opt.MapFrom(src => src.Roles));
 
             // UserDto -> User
             CreateMap<UserDto, User>()
+                // Roles is List<string>, assign directly without Join
                 .ForMember(dest => dest.Roles,
-                    opt => opt.MapFrom(src => string.Join(",", src.Roles)));
+                    opt => opt.MapFrom(src => src.Roles));
 
             // Property <-> PropertyDto
             CreateMap<Property, PropertyDto>().ReverseMap();
@@ -32,4 +34,6 @@ namespace EZStay.Api.Mappings
             CreateMap<Review, ReviewDto>().ReverseMap();
         }
     }
+
 }
+

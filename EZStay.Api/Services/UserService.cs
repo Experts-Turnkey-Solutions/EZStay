@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using EZStay.Api.Models.Domain;
 using EZStay.Api.Repositories;
-using EZStay.Api.Utils.Core;
 
 namespace EZStay.Api.Services
 {
@@ -20,35 +19,32 @@ namespace EZStay.Api.Services
 
         public async Task<User> CreateUserAsync(User user)
         {
-            // Check if the email or username is already registered
             var existingUser = await _repository.Query()
-                .FirstOrDefaultAsync(u => u.Email.ToLower() == user.Email.ToLower() || u.Username.ToLower() == user.Username.ToLower());
+                .FirstOrDefaultAsync(u =>
+                    u.Email.ToLower() == user.Email.ToLower() ||
+                    u.Username.ToLower() == user.Username.ToLower());
 
             if (existingUser != null)
             {
-                // Split the existing roles string into a list of roles
-                var existingRoles = existingUser.Roles.Split(',').ToList();
+                // Normalize new roles to lower case
+                var newRoles = user.Roles.Select(r => r.ToLower()).ToList();
 
-                // Check if the new role is already assigned to the user
-                if (existingRoles.Contains(user.Roles))
-                {
-                    // If the role already exists, throw an exception to prevent registration
+                // Add roles only if they do not exist already
+                var rolesToAdd = newRoles.Except(existingUser.Roles.Select(r => r.ToLower())).ToList();
+
+                if (!rolesToAdd.Any())
                     throw new InvalidOperationException("This role has already been assigned to this user.");
-                }
 
-                // Add the new role to the existing roles list
-                existingRoles.Add(user.Roles);
+                existingUser.Roles.AddRange(rolesToAdd);
 
-                // Join the roles back into a comma-separated string
-                existingUser.Roles = string.Join(",", existingRoles);
-
-                // Update the existing user
                 await _repository.UpdateAsync(existingUser.Id, existingUser);
 
-                return existingUser; // Return updated user
+                return existingUser;
             }
 
-            // If user is not found, create a new user with the selected role
+            // Normalize roles before creation
+            user.Roles = user.Roles.Select(r => r.ToLower()).ToList();
+
             return await _repository.AddAsync(user);
         }
 

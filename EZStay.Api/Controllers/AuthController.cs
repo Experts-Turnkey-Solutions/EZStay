@@ -10,7 +10,7 @@ using EZStay.Api.Utils.Core;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 
-namespace EZStay.Api.Controllers // namespace EZStay.Api.Controllers.v1 namespace for clarity (optional)
+namespace EZStay.Api.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
@@ -38,20 +38,20 @@ namespace EZStay.Api.Controllers // namespace EZStay.Api.Controllers.v1 namespac
 
             if (existingUser != null)
             {
-                var rolesList = existingUser.Roles.Split(',').Select(r => r.Trim().ToLower()).ToList();
+                var rolesList = existingUser.Roles.Select(r => r.ToLower()).ToList();
 
                 if (rolesList.Contains(dto.Role.ToLower()))
                     return BadRequest("This role has already been assigned to this user.");
 
-                rolesList.Add(dto.Role);
-                existingUser.Roles = string.Join(",", rolesList);
+                rolesList.Add(dto.Role.ToLower());
+                existingUser.Roles = rolesList;
                 await _userService.UpdateUserAsync(existingUser.Id, existingUser);
                 return Ok(existingUser);
             }
 
             var newUser = _mapper.Map<User>(dto);
             newUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            newUser.Roles = dto.Role;
+            newUser.Roles = new List<string> { dto.Role.ToLower() };
 
             var createdUser = await _userService.CreateUserAsync(newUser);
             return CreatedAtAction(nameof(Register), new { id = createdUser.Id }, createdUser);
@@ -65,7 +65,7 @@ namespace EZStay.Api.Controllers // namespace EZStay.Api.Controllers.v1 namespac
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
                 return Unauthorized("Invalid credentials");
 
-            var rolesList = user.Roles.Split(',').Select(r => r.Trim().ToLower()).ToList();
+            var rolesList = user.Roles.Select(r => r.ToLower()).ToList();
             if (!rolesList.Contains(dto.Role.ToLower()))
                 return Unauthorized("You are not authorized for this role.");
 
@@ -77,7 +77,7 @@ namespace EZStay.Api.Controllers // namespace EZStay.Api.Controllers.v1 namespac
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, dto.Role)
+                new Claim(ClaimTypes.Role, dto.Role.ToLower())
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
